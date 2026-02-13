@@ -1,0 +1,167 @@
+# ================================
+# PROJECT INFO (UPDATED)
+# ================================
+[project]
+name = "POS/CRM-Lite Toko Bangunan (TB. Makmur Lestari)"
+description = "Sistem informasi penjualan & inventaris toko bangunan dengan fokus pada kecepatan transaksi, audit stok, dan laporan keuangan sederhana."
+version = "2.0.0"
+
+project.goals = [
+  "Transaksi kasir cepat (POS) dengan dukungan scanner/pencarian",
+  "Manajemen Inventaris Real-time (Stok Masuk/Keluar/Opname)",
+  "Peringatan Dini: Stok Menipis & Barang Kadaluwarsa (untuk cat/kimia)",
+  "Analisa Barang Slow Moving (Jarang Terjual)",
+  "Laporan Keuangan & Mutasi Stok Otomatis",
+  "Manajemen Pengguna (Admin & Kasir)"
+]
+
+project.constraints = [
+  "Frontend: React + Vite + Tailwind CSS",
+  "Backend: Express.js + MySQL (Prisma ORM)",
+  "Icons: Phosphor Icons (Sesuai Desain)",
+  "Sidebar: Dark Mode Theme",
+  "Dashboard Cards: Warna-warni (Cyan, Orange, Emerald, Rose)"
+]
+
+# ================================
+# STACK & TOOLING
+# ================================
+[stack.frontend]
+framework = "React 18 + Vite"
+ui_lib = "Tailwind CSS (tanpa framework berat)"
+icons = "@phosphor-icons/web"
+state_management = "React Query (TanStack Query)"
+routing = "React Router DOM v6"
+
+[stack.backend]
+runtime = "Node.js (Express)"
+db_orm = "Prisma"
+database = "MySQL"
+auth = "JWT (HttpOnly Cookie)"
+
+# ================================
+# DATABASE SCHEMA (PRISMA CONCEPT)
+# ================================
+[database]
+notes = "Skema disesuaikan dengan kebutuhan fitur Mutasi Stok dan Slow Moving"
+
+models = [
+  "User (id, name, email, password, role)",
+  "Category (id, name, description)",
+  "Product (id, sku, name, categoryId, buyPrice, sellPrice, stock, unit, minStock, isActive)",
+  "Transaction (id, invoiceNo, cashierId, totalAmount, paymentMethod, createdAt)",
+  "TransactionItem (id, transactionId, productId, qty, price, subtotal)",
+  "StockMovement (id, productId, type:IN/OUT/ADJUST, qty, notes, userId, createdAt)"
+]
+
+# ================================
+# UI STRUCTURE (SITEMAP)
+# ================================
+[ui]
+sidebar_theme = "Dark (Slate-900)"
+
+[ui.routes]
+# -- Public --
+"/login" = "Halaman Login"
+
+# -- Secured (Dashboard Layout) --
+"/dashboard" = "Dashboard Utama (Statistik & Grafik)"
+
+# -- Transaksi --
+"/pos" = "Kasir / Point of Sales"
+
+# -- Inventaris --
+"/inventory" = "Daftar Semua Barang (CRUD)"
+"/inventory/low-stock" = "Stok Menipis & Expiring"
+"/inventory/slow-moving" = "Barang Jarang Terjual (Slow Moving)"
+"/inventory/movement" = "Riwayat Mutasi Stok (Stock Movement)"
+
+# -- Laporan --
+"/reports" = "Pusat Laporan (Penjualan, Stok, Keuangan)"
+
+# -- Admin --
+"/users" = "Manajemen Pengguna"
+"/settings" = "Pengaturan Toko"
+
+# ================================
+# COMPONENT LIST (FRONTEND)
+# ================================
+[frontend.components]
+layout = ["MainLayout", "Sidebar", "Header"]
+common = ["Button", "Input", "Modal", "Table", "CardStat", "Badge"]
+features = [
+  "ProductGrid (POS)",
+  "CartSidebar (POS)",
+  "StockAdjustmentModal",
+  "SalesChart",
+  "ReceiptPrinter (Component Cetak Struk)"
+]
+
+# ================================
+# API ENDPOINTS DESIGN
+# ================================
+[api]
+base_url = "/api/v1"
+
+[api.auth]
+"POST /auth/login" = "Login & Set Cookie"
+"POST /auth/logout" = "Clear Cookie"
+"GET /auth/me" = "Cek Session User"
+
+[api.products]
+"GET /products" = "List produk (support filter & search)"
+"GET /products/low-stock" = "Filter produk stok < minStock"
+"GET /products/slow-moving" = "Analisa produk jarang terjual X hari"
+"POST /products" = "Tambah produk baru"
+"PUT /products/:id" = "Edit data produk"
+"DELETE /products/:id" = "Soft delete produk"
+
+[api.inventory]
+"POST /inventory/adjust" = "Input stok masuk/keluar manual (Opname)"
+"GET /inventory/history" = "Lihat log StockMovement"
+
+[api.transactions]
+"POST /transactions" = "Simpan transaksi baru (kurangi stok otomatis)"
+"GET /transactions" = "Riwayat transaksi (filter tanggal)"
+"GET /transactions/:id" = "Detail transaksi untuk cetak ulang"
+
+[api.reports]
+"GET /reports/sales" = "Agregasi penjualan per periode"
+"GET /reports/stock" = "Snapshot nilai aset stok"
+
+# ================================
+# DEVELOPMENT STEPS
+# ================================
+[[dev_roadmap]]
+phase = "1. Setup & Database"
+tasks = [
+  "Init Monorepo (Client/Server)",
+  "Setup Prisma Schema (MySQL)",
+  "Seed Data (Admin User, Kategori Dasar, Produk Demo)"
+]
+
+[[dev_roadmap]]
+phase = "2. Backend Core"
+tasks = [
+  "Setup Express & Middleware (CORS, Logger)",
+  "Auth Logic (Login/Logout)",
+  "CRUD Produk API",
+  "Transaction Logic (Create Transaction + Update Stock Atomic)"
+]
+
+[[dev_roadmap]]
+phase = "3. Frontend Integration"
+tasks = [
+  "Setup React + Tailwind + Phosphor Icons",
+  "Implementasi Login & Dashboard Layout",
+  "Page: Inventory & Stock Management",
+  "Page: POS (Cart Logic & Payment)"
+]
+
+[[dev_roadmap]]
+phase = "4. Reporting & Polish"
+tasks = [
+  "Page: Reports & Charts",
+  "Fitur Print Struk",
+  "Testing Alur Admin vs Kasir"
+]

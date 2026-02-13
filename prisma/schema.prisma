@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  name      String
+  role      Role      @default(CASHIER)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  transactions   Transaction[]
+  stockMovements StockMovement[]
+
+  @@map("users")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Soft delete
+  
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id         Int       @id @default(autoincrement())
+  sku        String    @unique
+  name       String
+  categoryId Int
+  category   Category  @relation(fields: [categoryId], references: [id])
+  buyPrice   Decimal   @db.Decimal(12, 2)
+  sellPrice  Decimal   @db.Decimal(12, 2)
+  stock      Int       @default(0)
+  unit       String    @default("pcs")
+  minStock   Int       @default(5)
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime? // Soft delete
+
+  transactionItems TransactionItem[]
+  stockMovements   StockMovement[]
+
+  @@map("products")
+}
+
+model Transaction {
+  id            Int           @id @default(autoincrement())
+  invoiceNo     String        @unique
+  cashierId     Int
+  cashier       User          @relation(fields: [cashierId], references: [id])
+  totalAmount   Decimal       @db.Decimal(12, 2)
+  paymentMethod PaymentMethod @default(CASH)
+  createdAt     DateTime      @default(now())
+
+  items TransactionItem[]
+
+  @@map("transactions")
+}
+
+model TransactionItem {
+  id            Int         @id @default(autoincrement())
+  transactionId Int
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  productId     Int
+  product       Product     @relation(fields: [productId], references: [id])
+  qty           Int
+  price         Decimal     @db.Decimal(12, 2)
+  subtotal      Decimal     @db.Decimal(12, 2)
+
+  @@map("transaction_items")
+}
+
+model StockMovement {
+  id        Int               @id @default(autoincrement())
+  productId Int
+  product   Product           @relation(fields: [productId], references: [id])
+  type      StockMovementType
+  qty       Int
+  notes     String?
+  userId    Int
+  user      User              @relation(fields: [userId], references: [id])
+  createdAt DateTime          @default(now())
+
+  @@map("stock_movements")
+}
+
+enum Role {
+  ADMIN
+  CASHIER
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  QRIS
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUST
+}
